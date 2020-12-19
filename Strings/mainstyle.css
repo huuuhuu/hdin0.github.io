@@ -1,0 +1,22 @@
+#title {
+  text-align: left;
+  color: lightGray;
+  background-color: #323648;
+  padding-top: 5px;
+  padding-left: 10px;
+  padding-bottom: 4px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#button-board {
+  position: absolute;
+  bottom: 0;
+  width: 100%; 
+}
+#input {
+  text-align: left;
+  color: lightGray;
+  background-color: #323648;
+  padding: 10px;
+  font-family: Arial, Helvetica, sans-serif;
+}
