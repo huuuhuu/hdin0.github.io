@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Three.js and WebPd</title>
+	<style>
+        body {
+            overflow: hidden;
+            margin: 2px;
+        }
+  </style>
+	<link rel="stylesheet" type="text/css" href="mainstyle.css">
+	<script type="text/javascript" src="wires.js"></script>
+	<!-- <script>
+		var myHeaders = new Headers();
+		myHeaders.append('Content-Type', 'application/javascript');
+	</script>
+	<script type="application/javascript" src="../js/jquery.js"></script>
+	<script type="application/javascript" src="../js/webpd-latest.js"></script>
+	<script>
+		var patch
+		$.get('../patches/myPatch.pd', function(patchStr) {
+			patch = Pd.loadPatch(patchStr)
+			Pd.start()
+		})
+	</script> -->
+</head>
+
+<body>
+
+	<div id="title">
+		<p> <emph>2020 Generative Music Project Display</emph> </p>
+	</div>
+
+	<div id="display">
+   <script type="module" src="wires.js"></script>
+  </div>
+	<div id="button-board">
+	<div id="input">
+		<input id="xset">
+		<input id="yset">
+		<input id="zset">
+		<script type="module">
+  		import {setPointer} from './wires.js';
+			import {startWalksignal}  from './wires.js';
+
+			document.querySelector('#setPoint').addEventListener('click', setPointer)
+			document.querySelector('#stWalk').addEventListener('click',startWalksignal);
+		</script>
+		<button type="button" id="setPoint">Place Pointer</button>
+		<button type="button" id="stWalk">Start Walk</button>
+		<span id="response"></span>
+	</div>
+	</div>
+
+</body>
+
+</html>
