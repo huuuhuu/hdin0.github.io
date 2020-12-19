@@ -1,8 +1,7 @@
-import * as THREE from '/build/three.module.js';
-import {OrbitControls} from '/jsm/controls/OrbitControls.js';
-import Stats from '/jsm/libs/stats.module.js';
-import {BufferGeometryUtils} from '/jsm/utils/BufferGeometryUtils.js';
-// to update: npm install three@latest
+import * as THREE from "https://threejs.org/build/three.module.js";
+import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
+import Stats from 'https://threejs.org/examples/jsm/libs/stats.js'
+import {BufferGeometryUtils} from 'https://threejs.org/examples/jsm/utils/BufferGeometryUtils.js'; 
 
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
