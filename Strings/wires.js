@@ -1,6 +1,6 @@
 import * as THREE from "https://threejs.org/build/three.module.js";
 import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
-import Stats from 'https://threejs.org/examples/jsm/libs/stats.js'
+import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js'
 import {BufferGeometryUtils} from 'https://threejs.org/examples/jsm/utils/BufferGeometryUtils.js'; 
 
 var renderer = new THREE.WebGLRenderer();
