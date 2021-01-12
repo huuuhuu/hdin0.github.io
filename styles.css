@@ -1,18 +1,20 @@
 :root {
   /* Color Pallete */
-  --color-1: #EBEEED;
-  --color-2: #737D7A;
-  --color-3: #718592;
-  --color-4: #4B6271;
-  --color-5: #191C24;
+  --color-1: #d4dadd;
+  --color-2: #283850;
+  --color-3: #283618;
+  --color-4: #191919;
+  --color-5: #b8a388;
 }
 
 body {
   background-color: var(--color-1);
 }
 p {
-
   font-size: 11px;
+}
+a {
+  text-decoration: none;
 }
 
 .projectGrid {
@@ -41,6 +43,9 @@ p {
   font-size: 18px;
   margin: 6px 6px;
   cursor: pointer;
+}
+.project:hover {
+  background-color: #202c40;
 }
 
 .disabled {
