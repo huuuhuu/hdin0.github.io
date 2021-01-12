@@ -1,0 +1,92 @@
+#grid {
+  position: absolute;
+  background-color: #ffffff;
+  top: 10vh;
+  z-index: 1;
+}
+
+#topBar, #bottomBar {
+  position: absolute;
+  background-color: #1c2738;
+  z-index: 2;
+  width: 100vw;
+  /* why is vw grey */
+}
+
+#topBar {
+  height: 10vh;
+  top: 0vh;
+}
+
+#bottomBar {
+  height: 10vh;
+  top: 90vh;
+}
+
+#title {
+  color: white;
+  text-align: center;
+  font-size: 20px;
+}
+
+#guis {
+  color: white;
+  font-size: 16px;
+}
+
+#buttons {
+  position: relative;
+  text-align: right;
+  top: 5px;
+  right: 30px;
+  bottom: 10px;
+  transition-duration: 0.5s;
+}
+
+/* BUTTONS */
+
+.button {
+  border: none;
+  width: 32px;
+  height: 32px;
+}
+.red {
+  background-color: #990000;
+  color: #990000;
+}
+.red:hover {
+  background-color: #7a0000;
+  color: #7a0000;
+}
+.blue {
+  background-color: #91A8D0;
+  color: #91A8D0;
+}
+.blue:hover {
+  background-color: #7486A6;
+  color: #7486A6;
+}
+.green {
+  background-color: #283618;
+  color: #283618;
+}
+.green:hover {
+  background-color: #202b13;
+  color: #202b13;
+}
+.purple {
+  background-color: #372239;
+  color: #372239;
+}
+.purple:hover {
+  background-color: #2c1b2d;
+  color: #2c1b2d;
+}
+.grey {
+  background-color: #595959;
+  color: #595959;
+}
+.grey:hover {
+  background-color: #474747;
+  color: #474747;
+}
