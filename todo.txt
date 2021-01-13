@@ -3,3 +3,4 @@
 3. Get the sound to work
 4. Make the Cosmic strings page a form
 5. Add more scripts
+6. An option to highlight triangles in the tonnetz
