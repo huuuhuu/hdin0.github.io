@@ -1,0 +1,5 @@
+1. Add curve paths to boid flocks
+2. Dac on and off for Pd
+3. Get the sound to work
+4. Make the Cosmic strings page a form
+5. Add more scripts
