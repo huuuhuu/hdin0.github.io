@@ -5,6 +5,7 @@ var latticePitchContents = new Array( 64000 );
 var finishedLoading = false;
 var ready = true;
 var timer = 0;
+var cnt = 0;
 
 var slen = 400;
 var height = slen;
@@ -216,7 +217,7 @@ function move() {
   });
 }
 
-function sound( res ) {
+function sound() {
   boids.forEach((boid) => {
 
     if (!(isNaN(boid.mesh.position.x))){
@@ -228,20 +229,14 @@ function sound( res ) {
   ready = true;
 }
 
-//   // if ( res == 1 ) {
-
-//     ready = true;
-//   })
-// }
-
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
   move();
 
-  timer++;
-  var res = timer % 120;
-  if (finishedLoading && ready && (res == 1)){
+  // timer++;
+  // var res = timer % 120;
+  if (finishedLoading && ready) {
     ready = false;
     sound();
   }
@@ -268,8 +263,14 @@ function convertToLatticeInd( xpos, ypos, zpos) {
 }
 
 function triggerReceive( index ) {
+  // console.log( index );
+  // console.log(Math.round(latticePitchContents[index]));
   var val = Math.round(latticePitchContents[index] * 440);
-    Pd.send('somenumber', val);
+  cnt++;
+  if ((cnt % 2) == 0){
+  Pd.send('num1', [parseFloat(val)]);}
+  else {
+  Pd.send('num2', [parseFloat(val)]);}
 }
 
 
@@ -283,13 +284,20 @@ $('#file-input').change(function() {
     reader.readAsText( file );
     reader.onload = function(e) {
       let text = e.target.result;
-      let lines = text.split(/[\r\n]+/g);
+      let lines = text.split('\n');
       let i = 0;
-      lines.forEach(function(line) {
-        latticePitchContents[i] = line;
+      lines.forEach((line) => {
+        latticePitchContents[i] = parseFloat(line);
+        // if (i == 63999){
+        //   console.log(parseFloat(line));
+        //   console.log(latticePitchContents[i])
+        // }
         i++;
-      })
+        if (i==64000){
+          finishedLoading = true;
+          // console.log(latticePitchContents[63999]);
+        }
+      });
     }
   }
-  finishedLoading = true;
 });
