@@ -22,9 +22,9 @@ boids.accel = [];
 boids.separationDistance = 20;
 boids.cohesionDistance = 40;
 boids.alignmentDistance = 100;
-boids.separationForce = 1.5;
-boids.cohesionForce = 1;
-boids.alignmentForce = 2.5;
+boids.separationForce = 5;
+boids.cohesionForce = 10;
+boids.alignmentForce = 15;
 boids.accelerationLimitRoot = 3;
 boids.speedLimit = 5;
 boids.accelerationLimit = Math.pow(boids.accelerationLimitRoot, 2);
@@ -70,7 +70,7 @@ function onWindowResize() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-const geometry = new THREE.ConeGeometry( 1, 4, 5.3 );
+const geometry = new THREE.SphereGeometry( 1, 16, 16 );
 const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
 let mesh = new THREE.InstancedMesh( geometry, material, count );
 mesh.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); //will be updated every frame
@@ -86,8 +86,8 @@ while (i < (count)){
   boids.velocity.push( new THREE.Vector3( 0.01, 0.01, 0.01 ) );
   boids.accel.push( new THREE.Vector3( 0.01, 0.01, 0.01 ) );
   mesh.setMatrixAt( i, matrix );
-  // mesh.setColorAt( i, color.setHex( Math.random() * 0xffffff ) );
-  mesh.setColorAt( i, color.setHex( 0xffffff ) );
+  // mesh.setColorAt( i, color.setHex( 0xffffff ) );
+  mesh.setColorAt( i, color.setHex( Math.random() * 0xffffff ) );
   i++;
 }
 scene.add( mesh );
@@ -109,17 +109,17 @@ function buildGui() {
 
   gui.add( mesh, 'count', 0, count);
 
-  gui.add( params, 'sepDist', 0, 1000 ).onChange( function ( val ) {
+  gui.add( params, 'sepDist', 0, 200 ).onChange( function ( val ) {
     boids.separationDistance = val;
     render();
   });
 
-  gui.add( params, 'cohDist', 0, 1000 ).onChange( function ( val ) {
+  gui.add( params, 'cohDist', 0, 200 ).onChange( function ( val ) {
     boids.cohesionDistance = val;
     render();
   });
 
-  gui.add( params, 'aliDist', 0, 1000 ).onChange( function ( val ) {
+  gui.add( params, 'aliDist', 0, 200 ).onChange( function ( val ) {
     boids.alignmentDistance = val;
     render();
   });
@@ -186,7 +186,10 @@ function move() {
         }
       }
     }
-
+    // console.log('--');
+    // console.log( sepForce );
+    // console.log( cohForce );
+    // console.log( aliForce );
     separation( sepForce, sforceX, sforceY, sforceZ, i );
     cohesion(   cohForce, cforceX, cforceY, cforceZ, i );
     alignment(  aliForce, aforceX, aforceY, aforceZ, i );
@@ -212,20 +215,23 @@ function move() {
       }
     }
 
-    let boundV = boundPositions( i );
-    boids.velocity[i].add( boundV );
+    boundPositions( i );
 
     mesh.getMatrixAt( i, matrix );
     position.setFromMatrixPosition( matrix );
-      let center = boids.velocity[i];
-      center.multiplyScalar(-1);
-      let up = new THREE.Vector3( position.x, position.y, position.z+1 );
-      matrix.lookAt( position, center, up );
     position.add( boids.velocity[i] );
     matrix.setPosition( position );
     mesh.setMatrixAt( i, matrix );
     mesh.instanceMatrix.needsUpdate = true;
   }
+}
+
+// add this when movement is right
+function lookRightDir() {
+  let center = boids.velocity[i];
+  center.multiplyScalar(-1);
+  let up = new THREE.Vector3( position.x, position.y, position.z+1 );
+  matrix.lookAt( position, center, up );
 }
 
 // splits the 3d triangle into two hypot.
@@ -251,6 +257,7 @@ function separation( sepForce, sfX, sfY, sfZ, ind) {
     addv.y = (sepForce * sfY / length);
     addv.z = (sepForce * sfZ / length);
   }
+
   boids.accel[ind].add( addv );
 }
 
@@ -276,28 +283,31 @@ function alignment( aliForce, afX, afY, afZ , ind) {
   boids.accel[ind].sub( addv );
 }
 
+// directly changes velocity and accel values.
 function boundPositions( boidIndex ) {
-  var v = new THREE.Vector3();
-  let b = getBoidPos( boidIndex );
-
+  // var v = new THREE.Vector3();
+  let b = getBoidPos( boidIndex )
   if (b.x < xMin + 20) {
-    boids.velocity[boidIndex].reflect( xminN );
+    boids.accel[boidIndex].setComponent( 0, (-1)*boids.accel[boidIndex].x );
   } else if (b.x > xMax - 20) {
-    boids.velocity[boidIndex].reflect( xmaxN );
+    boids.accel[boidIndex].setComponent( 0, (-1)*boids.accel[boidIndex].x );
   }
 
   if (b.y < yMin + 20) {
-    boids.velocity[boidIndex].reflect( yminN );
+    boids.accel[boidIndex].setComponent( 1, (-1)*boids.accel[boidIndex].y );
   } else if (b.y > yMax - 20) {
-    boids.velocity[boidIndex].reflect( ymaxN );
+    boids.accel[boidIndex].setComponent( 1, (-1)*boids.accel[boidIndex].y );
   }
 
   if (b.z < zMin + 20) {
-    boids.velocity[boidIndex].reflect( zminN );
+    boids.accel[boidIndex].setComponent( 2, (-1)*boids.accel[boidIndex].z );
   } else if (b.z > zMax - 20) {
-    boids.velocity[boidIndex].reflect( zmaxN );
+    // console.log('--')
+    // console.log(boids.velocity[boidIndex].z);
+    boids.accel[boidIndex].setComponent( 2, (-1)*boids.accel[boidIndex].z );
+    // console.log(boids.velocity[boidIndex].z)
   }
-  return v;
+  // return v;
 }
 
 //
