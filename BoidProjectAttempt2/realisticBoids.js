@@ -19,8 +19,8 @@ var zMax = depth;
 var boids = []; //this is where I'll be able to keep track of all the fields. It's separate from the mesh.
 boids.velocity = [];
 boids.accel = [];
-boids.separationDistance = 20;
-boids.cohesionDistance = 100;
+boids.separationDistance = 50;
+boids.cohesionDistance = 200;
 boids.alignmentDistance = 200;
 boids.separationForce = 1.5;
 boids.cohesionForce = 2.5;
@@ -39,7 +39,7 @@ var ymaxN = new THREE.Vector3( 0, -1, 0 ); var yminN = new THREE.Vector3( 0, 1, 
 var zmaxN = new THREE.Vector3( 0, 0, -1 ); var zminN = new THREE.Vector3( 0, 0, 1);
 
 /* GUI Parameters */
-const count = parseInt( window.location.search.substr( 1 ) ) || 150;
+const count = parseInt( window.location.search.substr( 1 ) ) || 250;
 const sepForce = parseInt( window.location.search.substr( 2 ) ) || boids.separationForce;
 const cohForce = parseInt( window.location.search.substr( 3 ) ) || boids.cohesionForce;
 const aliForce = parseInt( window.location.search.substr( 4 ) ) || boids.alignmentForce;
@@ -113,17 +113,17 @@ function buildGui() {
 
   gui.add( mesh, 'count', 0, count);
 
-  gui.add( params, 'sepDist', 0, 200 ).onChange( function ( val ) {
+  gui.add( params, 'sepDist', 0, 400 ).onChange( function ( val ) {
     boids.separationDistance = val;
     render();
   });
 
-  gui.add( params, 'cohDist', 0, 200 ).onChange( function ( val ) {
+  gui.add( params, 'cohDist', 0, 400 ).onChange( function ( val ) {
     boids.cohesionDistance = val;
     render();
   });
 
-  gui.add( params, 'aliDist', 0, 200 ).onChange( function ( val ) {
+  gui.add( params, 'aliDist', 0, 400 ).onChange( function ( val ) {
     boids.alignmentDistance = val;
     render();
   });
@@ -295,40 +295,40 @@ function boundPositions( boidIndex ) {
 
   let b = getBoidPos( boidIndex )
   if (b.x < xMin + 20) {
-    boids.accel[boidIndex].setComponent( 0, (-3)*boids.accel[boidIndex].x );
+    boids.accel[boidIndex].setComponent( 0, (2)*Math.abs(boids.accel[boidIndex].x) );
   } else if (b.x > xMax - 20) {
-    boids.accel[boidIndex].setComponent( 0, (-3)*boids.accel[boidIndex].x );
+    boids.accel[boidIndex].setComponent( 0, (-2)*Math.abs(boids.accel[boidIndex].x) );
   }
 
   if (b.y < yMin + 20) {
-    boids.accel[boidIndex].setComponent( 1, (-3)*boids.accel[boidIndex].y );
+    boids.accel[boidIndex].setComponent( 1, (2)*Math.abs(boids.accel[boidIndex].y) );
   } else if (b.y > yMax - 20) {
-    boids.accel[boidIndex].setComponent( 1, (-3)*boids.accel[boidIndex].y );
+    boids.accel[boidIndex].setComponent( 1, (-2)*Math.abs(boids.accel[boidIndex].y) );
   }
 
   if (b.z < zMin + 20) {
-    boids.accel[boidIndex].setComponent( 2, (-3)*boids.accel[boidIndex].z );
+    boids.accel[boidIndex].setComponent( 2, (2)*Math.abs(boids.accel[boidIndex].z) );
   } else if (b.z > zMax - 20) {
-    boids.accel[boidIndex].setComponent( 2, (-3)*boids.accel[boidIndex].z );
+    boids.accel[boidIndex].setComponent( 2, (-2)*Math.abs(boids.accel[boidIndex].z) );
   }
 }
 
 function teleport( boidIndex ) {
   let b = getBoidPos( boidIndex )
   if (b.x < xMin ) {
-    b.x = 10;
+    b.setComponent( 0, 10 );
   } else if (b.x > xMax ) {
-    b.x = 390;
+    b.setComponent( 0, 390 );
   }
   if (b.y < yMin ) {
-    b.y = 10;
+    b.setComponent( 1, 10 );
   } else if (b.y > yMax ) {
-    b.y = 390;
+    b.setComponent( 1, 390 );
   }
   if (b.z < zMin ) {
-    b.z = 10;
+    b.setComponent( 2, 10 );
   } else if (b.z > zMax ) {
-    b.z = 390;
+    b.setComponent( 2, 390 );
   }
 
   mesh.getMatrixAt( boidIndex, matrix );
@@ -338,7 +338,7 @@ function teleport( boidIndex ) {
   mesh.instanceMatrix.needsUpdate = true;
 }
 
-// This is a helper function to envision the walls. 
+// This is a helper function to envision the walls.
 function putInFrame() {
 
   const fcount = 4;
