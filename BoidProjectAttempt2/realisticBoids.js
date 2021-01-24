@@ -387,6 +387,57 @@ function render() {
 
 }
 animate();
+
 //
-// drawBoids();
-// animate();
+
+/* LOADS FILE */
+
+let parts = [];
+let points = [];
+
+async function loadFile(url) {
+  const req = await fetch(url);
+  return req.text();
+}
+
+function parseData( text ) {
+  //split into lines
+  text.split('\n').forEach( (line) => {
+    parts.push( line );
+  });
+  return parts;
+};
+
+async function handleData( file ){
+  const parts = await loadFile(file).then(parseData); //to fix later. Surely it's not efficient to have to load and wait everytime for the promise to finish.
+  // alert( parts );
+}
+
+handleData('./sept11pValuesByLine.txt')
+
+//
+
+/* Handles Boid Position to sound */
+
+// cartesian coordinates to array index
+function convertToLatticeInd( xpos, ypos, zpos) {
+  var xpos = Math.round(xpos / divisor);
+  var ypos = Math.round(ypos / divisor);
+  var zpos = Math.round(zpos / divisor);
+
+  var ind = (1600*(xpos - 1)) + (40*(ypos-1)) + zpos;
+  return ind;
+}
+
+// sends to pureData
+function triggerReceive( index ) {
+  var val = Math.round(latticePitchContents[index] * 440);
+  cnt++;
+  if ((cnt % 2) == 0){
+  Pd.send('num1', [parseFloat(val)]);}
+  else {
+  Pd.send('num2', [parseFloat(val)]);}
+}
+
+//
+
