@@ -1,6 +1,6 @@
 import * as THREE from "https://threejs.org/build/three.module.js";
 import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
-// import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
+import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitControls.js';
 import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
 
 var height = 400;
@@ -20,13 +20,13 @@ var boids = []; //this is where I'll be able to keep track of all the fields. It
 boids.velocity = [];
 boids.accel = [];
 boids.separationDistance = 20;
-boids.cohesionDistance = 40;
-boids.alignmentDistance = 100;
-boids.separationForce = 5;
-boids.cohesionForce = 10;
-boids.alignmentForce = 15;
-boids.accelerationLimitRoot = 3;
-boids.speedLimit = 5;
+boids.cohesionDistance = 100;
+boids.alignmentDistance = 200;
+boids.separationForce = 1.5;
+boids.cohesionForce = 2.5;
+boids.alignmentForce = 7;
+boids.accelerationLimitRoot = 1.5;
+boids.speedLimit = 3;
 boids.accelerationLimit = Math.pow(boids.accelerationLimitRoot, 2);
 
 var sforceX = 0; var sforceY = 0; var sforceZ = 0;
@@ -39,7 +39,7 @@ var ymaxN = new THREE.Vector3( 0, -1, 0 ); var yminN = new THREE.Vector3( 0, 1, 
 var zmaxN = new THREE.Vector3( 0, 0, -1 ); var zminN = new THREE.Vector3( 0, 0, 1);
 
 /* GUI Parameters */
-const count = parseInt( window.location.search.substr( 1 ) ) || 300;
+const count = parseInt( window.location.search.substr( 1 ) ) || 150;
 const sepForce = parseInt( window.location.search.substr( 2 ) ) || boids.separationForce;
 const cohForce = parseInt( window.location.search.substr( 3 ) ) || boids.cohesionForce;
 const aliForce = parseInt( window.location.search.substr( 4 ) ) || boids.alignmentForce;
@@ -52,9 +52,9 @@ const aliDist = parseInt( window.location.search.substr( 7 ) ) || boids.alignmen
 var scene = new THREE.Scene();
   scene.background = new THREE.Color( 0x01374c );
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 450;
-  camera.position.y = 0;
-  camera.position.x = 50;
+  camera.position.z = 400;
+  camera.position.y = 400;
+  camera.position.x = 400;
 
 var position = new THREE.Vector3();
 
@@ -70,7 +70,11 @@ function onWindowResize() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-const geometry = new THREE.SphereGeometry( 1, 16, 16 );
+const controls = new OrbitControls( camera, renderer.domElement );
+
+
+// const geometry = new THREE.ConeGeometry(1, 4, 5.3);
+const geometry = new THREE.SphereGeometry( 1, 8, 8 );
 const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
 let mesh = new THREE.InstancedMesh( geometry, material, count );
 mesh.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); //will be updated every frame
@@ -79,12 +83,12 @@ const color = new THREE.Color();
 
 let i = 0;
 while (i < (count)){
-  matrix.setPosition( Math.floor(Math.random() * width) - width/2,
-                      Math.floor(Math.random() * height) - height/2,
-                      Math.floor(Math.random() * depth) - depth/2
+  matrix.setPosition( Math.floor(Math.random() * width),
+                      Math.floor(Math.random() * height),
+                      Math.floor(Math.random() * depth)
                     );
-  boids.velocity.push( new THREE.Vector3( 0.01, 0.01, 0.01 ) );
-  boids.accel.push( new THREE.Vector3( 0.01, 0.01, 0.01 ) );
+  boids.velocity.push( new THREE.Vector3( 0, 0, 0 ) );
+  boids.accel.push( new THREE.Vector3( 1, 1, 1 ) );
   mesh.setMatrixAt( i, matrix );
   // mesh.setColorAt( i, color.setHex( 0xffffff ) );
   mesh.setColorAt( i, color.setHex( Math.random() * 0xffffff ) );
@@ -124,17 +128,17 @@ function buildGui() {
     render();
   });
 
-  gui.add( params, 'sepForce', 0, 20 ).onChange( function ( val ) {
+  gui.add( params, 'sepForce', 0, 100 ).onChange( function ( val ) {
     boids.separationForce = val;
     render();
   });
 
-  gui.add( params, 'cohForce', 0, 20 ).onChange( function ( val ) {
+  gui.add( params, 'cohForce', 0, 100 ).onChange( function ( val ) {
     boids.cohesionForce = val;
     render();
   });
 
-  gui.add( params, 'aliForce', 0, 20 ).onChange( function ( val ) {
+  gui.add( params, 'aliForce', 0, 100 ).onChange( function ( val ) {
     boids.alignmentForce = val;
     render();
   });
@@ -186,13 +190,10 @@ function move() {
         }
       }
     }
-    // console.log('--');
-    // console.log( sepForce );
-    // console.log( cohForce );
-    // console.log( aliForce );
     separation( sepForce, sforceX, sforceY, sforceZ, i );
     cohesion(   cohForce, cforceX, cforceY, cforceZ, i );
     alignment(  aliForce, aforceX, aforceY, aforceZ, i );
+
   }
 
   for (let i = 0; i < count; i++ ) {
@@ -219,10 +220,17 @@ function move() {
 
     mesh.getMatrixAt( i, matrix );
     position.setFromMatrixPosition( matrix );
+      // let center = boids.velocity[i];
+      // center.multiplyScalar(-1);
+      // let up = new THREE.Vector3( position.x, position.y, position.z+1 );
+      // matrix.lookAt( position, center, up );
     position.add( boids.velocity[i] );
     matrix.setPosition( position );
     mesh.setMatrixAt( i, matrix );
     mesh.instanceMatrix.needsUpdate = true;
+
+teleport( i );
+
   }
 }
 
@@ -251,13 +259,12 @@ function hypot3(a, b, c) {
 
 function separation( sepForce, sfX, sfY, sfZ, ind) {
   let length = hypot3( sfX, sfY, sfZ );
-  let addv = new THREE.Vector3( 0.01, 0.01, 0.01);
+  let addv = new THREE.Vector3( 0, 0, 0 );
   if (length != 0){
     addv.x = (sepForce * sfX / length);
     addv.y = (sepForce * sfY / length);
     addv.z = (sepForce * sfZ / length);
   }
-
   boids.accel[ind].add( addv );
 }
 
@@ -285,30 +292,82 @@ function alignment( aliForce, afX, afY, afZ , ind) {
 
 // directly changes velocity and accel values.
 function boundPositions( boidIndex ) {
-  // var v = new THREE.Vector3();
+
   let b = getBoidPos( boidIndex )
   if (b.x < xMin + 20) {
-    boids.accel[boidIndex].setComponent( 0, (-1)*boids.accel[boidIndex].x );
+    boids.accel[boidIndex].setComponent( 0, (-3)*boids.accel[boidIndex].x );
   } else if (b.x > xMax - 20) {
-    boids.accel[boidIndex].setComponent( 0, (-1)*boids.accel[boidIndex].x );
+    boids.accel[boidIndex].setComponent( 0, (-3)*boids.accel[boidIndex].x );
   }
 
   if (b.y < yMin + 20) {
-    boids.accel[boidIndex].setComponent( 1, (-1)*boids.accel[boidIndex].y );
+    boids.accel[boidIndex].setComponent( 1, (-3)*boids.accel[boidIndex].y );
   } else if (b.y > yMax - 20) {
-    boids.accel[boidIndex].setComponent( 1, (-1)*boids.accel[boidIndex].y );
+    boids.accel[boidIndex].setComponent( 1, (-3)*boids.accel[boidIndex].y );
   }
 
   if (b.z < zMin + 20) {
-    boids.accel[boidIndex].setComponent( 2, (-1)*boids.accel[boidIndex].z );
+    boids.accel[boidIndex].setComponent( 2, (-3)*boids.accel[boidIndex].z );
   } else if (b.z > zMax - 20) {
-    // console.log('--')
-    // console.log(boids.velocity[boidIndex].z);
-    boids.accel[boidIndex].setComponent( 2, (-1)*boids.accel[boidIndex].z );
-    // console.log(boids.velocity[boidIndex].z)
+    boids.accel[boidIndex].setComponent( 2, (-3)*boids.accel[boidIndex].z );
   }
-  // return v;
 }
+
+function teleport( boidIndex ) {
+  let b = getBoidPos( boidIndex )
+  if (b.x < xMin ) {
+    b.x = 10;
+  } else if (b.x > xMax ) {
+    b.x = 390;
+  }
+  if (b.y < yMin ) {
+    b.y = 10;
+  } else if (b.y > yMax ) {
+    b.y = 390;
+  }
+  if (b.z < zMin ) {
+    b.z = 10;
+  } else if (b.z > zMax ) {
+    b.z = 390;
+  }
+
+  mesh.getMatrixAt( boidIndex, matrix );
+  position.setFromMatrixPosition( matrix );
+  matrix.setPosition( b );
+  mesh.setMatrixAt( boidIndex, matrix );
+  mesh.instanceMatrix.needsUpdate = true;
+}
+
+// This is a helper function to envision the walls. 
+function putInFrame() {
+
+  const fcount = 4;
+
+  // const geometry = new THREE.ConeGeometry(1, 4, 5.3);
+  const fgeo = new THREE.SphereBufferGeometry( 5, 32, 32 );
+  const fmat = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+  let fmesh = new THREE.InstancedMesh( fgeo, fmat, fcount );
+  const fmatrix = new THREE.Matrix4();
+
+  let i = 0;
+  fmatrix.setPosition( 0, 0, 0 );
+  fmesh.setMatrixAt( i, fmatrix );
+  fmesh.setColorAt( i, color.setHex( 0x000000 ) );
+  i++;
+  fmatrix.setPosition( 400, 0, 0 );
+  fmesh.setMatrixAt( i, fmatrix );
+  fmesh.setColorAt( i, color.setHex( 0x7F194A ) );
+  i++;
+  fmatrix.setPosition( 0, 400, 0 );
+  fmesh.setMatrixAt( i, fmatrix );
+  fmesh.setColorAt( i, color.setHex( 0xff0000 ) );
+  i++;
+  fmatrix.setPosition( 0, 0, 400 );
+  fmesh.setMatrixAt( i, fmatrix );
+  fmesh.setColorAt( i, color.setHex( 0x008000 ) );
+  scene.add( fmesh );
+}
+// putInFrame();
 
 //
 
@@ -318,6 +377,7 @@ function animate() {
   requestAnimationFrame(animate);
   move();
   stats.update();
+  controls.update();
   render();
 }
 
