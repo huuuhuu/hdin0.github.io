@@ -7,24 +7,20 @@
   <title>Boid Project</title>
   <meta name="Huay">
 
+  <!-- <link rel="stylesheet" href="css/styles.css?v=1.0"> -->
+
 </head>
 <script src="js/jquery.js"></script>
 <script src="js/webpd-latest.js"></script>
-<script type="module" src="./boidSounds.js"></script>
-
 <script>
-  var patch
-  $.get('./patches/main.pd', function(patchStr) {
-    patch = Pd.loadPatch(patchStr)
-    Pd.start()
-  })
+    var patch
+    $.get('patches/lotsOfReceivers.pd', function(patchStr) {
+      patch = Pd.loadPatch(patchStr)
+      Pd.start()
+    })
 </script>
 
 <body id="container">
-
-  <div>
-    <input type="file" id="file-input">
-  </div>
-
+  <script type="module" src="./realisticBoids.js"></script>
 </body>
 </html>
