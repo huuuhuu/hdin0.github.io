@@ -1,0 +1,20 @@
+body {
+  background-color: #000b0f;
+}
+
+/* .on {
+  width: 20vw;
+  height: 10vh;
+  position: absolute;
+  left: 8px;
+  bottom: 0;
+  opacity: 0.6;
+  background: #1b1e26;
+  z-index: 9;
+} */
+
+#app {
+  position: absolute;
+  width: 24vw;
+  left: 75vw;
+}
