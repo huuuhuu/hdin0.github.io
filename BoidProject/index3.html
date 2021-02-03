@@ -2,20 +2,19 @@
 
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-
+  <meta charset="utf-8" name="Huay">
   <title>Boid Project</title>
-  <meta name="Huay">
+  <!-- <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet"> -->
 
+  <link rel="stylesheet" href="./vueStyle.css" >
   <link rel="stylesheet" href="./boidsStyle.css">
-
 </head>
-<script src="js/jquery.js"></script>
-<script src="js/webpd-latest.js"></script>
 
-
-<body id="container">
-<script type="module" src="./realisticBoids.js"></script>
+<body>
+  <script src="js/jquery.js"></script>
+  <script src="js/webpd-latest.js"></script>
+  <script type="module" src="./realisticBoids.js"></script>
 
   <div class="sound-buttons">
     <div class="on">
@@ -24,9 +23,18 @@
       <script>
       function openPatch() {
           var patch
-          $.get('patches/lotsOfReceivers.pd', function(patchStr) {
+          $.get('patches/inout.pd', function(patchStr) {
             patch = Pd.loadPatch(patchStr)
-            Pd.start()
+
+            let msgArr = []; //sends pitch
+            let vpdArr = []; //sends volume
+            let oscArr = []; //osc~ objects
+            let plusArr = [];  //+~ objects
+
+            let dacOb = patch.createObject( 'dac~' );
+            plusArr.push( patch.createObject( '+~' ) );
+            plusArr[0].o(0).connect( dacOb.i(0) );
+            Pd.start();
           })
         }
       function stopPatch() {
@@ -35,5 +43,120 @@
       </script>
     </div>
   </div>
+
+  <!-- <script type="module" src="./controlBoidSide.js"></script> -->
+<div id="app">
+  <!-- <script src="js/vue-latest.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script> -->
+  <script type="text/x-template" id="app-template">
+  <v-app>
+    <v-container>
+      <span>Note! Controls do not work yet</span>
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Separation Distance</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="50"
+        min="0"
+        class="ma-0 pa-0"
+        hide-details
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Cohesion Distance</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="50"
+        min="0"
+        class="ma-0 pa-0"
+        hide-details
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Attraction Distance</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="50"
+        min="0"
+        class="ma-0 pa-0"
+        hide-details
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Separation Force</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="50"
+        min="0"
+        class="ma-0 pa-0"
+        hide-details
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Cohesion Force</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="50"
+        min="0"
+        class="ma-0 pa-0"
+        hide-details
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Attraction Force</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="50"
+        min="0"
+        class="ma-0 pa-0"
+        hide-details
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+    </v-container>
+  </v-app>
+  </script>
+
+<div id="app"></div>
+</div>
+
+<script src="./js/vue-latest.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script>
+  const App = {
+    template: '#app-template',
+    data: () => ({
+      //
+    })
+  }
+  new Vue({
+    vuetify: new Vuetify(),
+    render: h => h(App)
+  }).$mount('#app')
+  </script>
+
 </body>
 </html>
