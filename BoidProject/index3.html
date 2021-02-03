@@ -9,6 +9,8 @@
 
   <link rel="stylesheet" href="./vueStyle.css" >
   <link rel="stylesheet" href="./boidsStyle.css">
+  <script src="js/vue-latest.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 </head>
 
 <body>
@@ -16,7 +18,7 @@
   <script src="js/webpd-latest.js"></script>
   <script type="module" src="./realisticBoids.js"></script>
 
-  <div class="sound-buttons">
+  <!-- <div class="sound-buttons">
     <div class="on">
       <button id="startOn" onclick="openPatch()">Start Patch</button>
       <button onclick="stopPatch()">Stop</button>
@@ -42,7 +44,20 @@
       }
       </script>
     </div>
-  </div>
+  </div> -->
+
+<div id = "modePitch">
+       <h1>{{ message }}</h1>
+    </div>
+    <script type = "text/javascript">
+       var vue_det = new Vue({
+          el: '#modePitch',
+          data: {
+             message: 'NA'
+          }
+       });
+</script>
+
 
   <!-- <script type="module" src="./controlBoidSide.js"></script> -->
 <div id="app">
@@ -110,7 +125,7 @@
 
       <v-row no-gutters>
       <v-col cols="12" sm="6" md="4">
-      <span>Cohesion Force</span>
+      <span>Cohesion<br>Force</span>
       </v-col>
       <v-col cols="12" md="8">
       <v-slider
@@ -124,7 +139,7 @@
 
       <v-row no-gutters>
       <v-col cols="12" sm="6" md="4">
-      <span>Attraction Force</span>
+      <span>Attraction<br>Force</span>
       </v-col>
       <v-col cols="12" md="8">
       <v-slider
@@ -142,21 +157,17 @@
 
 <div id="app"></div>
 </div>
-
-<script src="./js/vue-latest.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-  <script>
-  const App = {
-    template: '#app-template',
-    data: () => ({
-      //
-    })
-  }
-  new Vue({
-    vuetify: new Vuetify(),
-    render: h => h(App)
-  }).$mount('#app')
-  </script>
-
+<script>
+const App = {
+  template: '#app-template',
+  data: () => ({
+    //
+  })
+}
+new Vue({
+  vuetify: new Vuetify(),
+  render: h => h(App)
+}).$mount('#app')
+</script>
 </body>
 </html>
