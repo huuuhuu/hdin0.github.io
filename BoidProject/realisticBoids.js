@@ -343,9 +343,9 @@ function separation( sepForce, sfX, sfY, sfZ, ind) {
   let length = hypot3( sfX, sfY, sfZ );
   let addv = new THREE.Vector3( 0, 0, 0 );
   if (length != 0){
-    addv.x = (sepForce * sfX / length);
-    addv.y = (sepForce * sfY / length);
-    addv.z = (sepForce * sfZ / length);
+    addv.x = (sepForce * sfX / Math.pow(length,2));
+    addv.y = (sepForce * sfY / Math.pow(length,2));
+    addv.z = (sepForce * sfZ / Math.pow(length,2));
   }
   boids.accel[ind].add( addv );
 
@@ -366,9 +366,9 @@ function alignment( aliForce, afX, afY, afZ , ind) {
   let length = hypot3( afX, afY, afZ );
   let addv = new THREE.Vector3( 0, 0, 0 );
   if (length != 0){
-  addv.x = (aliForce * afX / length);
-  addv.y = (aliForce * afY / length);
-  addv.z = (aliForce * afZ / length);
+  addv.x = (aliForce * afX / Math.pow(length,2));
+  addv.y = (aliForce * afY / Math.pow(length,2));
+  addv.z = (aliForce * afZ / Math.pow(length,2));
   }
   boids.accel[ind].sub( addv );
 }
