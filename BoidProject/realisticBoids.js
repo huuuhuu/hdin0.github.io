@@ -11,9 +11,9 @@ let inHeight = window.innerHeight * altHeig;
 let latticePitchContents = [];
 let finLoading = false;
 let clicked = false;
-let latticeSidelen = 40;
-var slen = 600;
-var divisor = slen / latticeSidelen;
+
+let thereIsAGoal = false;
+let pitchGoalval = -1;
 
 //webpd fields
 let indArr = []; //this is the lattice index
@@ -29,19 +29,6 @@ var xMin = 0; var xMax = width;
 var yMin = 0; var yMax = height;
 var zMin = 0; var zMax = depth;
 
-var boids = []; //this is where I'll be able to keep track of all the fields. It's separate from the mesh.
-boids.velocity = [];
-boids.accel = [];
-boids.separationDistance = divisor/5;
-boids.cohesionDistance = slen*.4;
-boids.alignmentDistance = slen*.5;
-boids.separationForce = divisor*0.35;
-boids.cohesionForce = divisor*0.3;
-boids.alignmentForce = divisor*0.8;
-boids.accelerationLimitRoot = 1.5;
-boids.speedLimit = 3;
-boids.accelerationLimit = Math.pow(boids.accelerationLimitRoot, 2);
-
 var sforceX = 0; var sforceY = 0; var sforceZ = 0;
 var cforceX = 0; var cforceY = 0; var cforceZ = 0;
 var aforceX = 0; var aforceY = 0; var aforceZ = 0;
@@ -52,48 +39,7 @@ var ymaxN = new THREE.Vector3( 0, -1, 0 ); var yminN = new THREE.Vector3( 0, 1, 
 var zmaxN = new THREE.Vector3( 0, 0, -1 ); var zminN = new THREE.Vector3( 0, 0, 1);
 
 /* GUI Parameters */
-const count = parseInt( window.location.search.substr( 1 ) ) || 310;
-const sepForce = boids.separationForce;
-const cohForce = boids.cohesionForce;
-const aliForce = boids.alignmentForce;
-const sepDist = boids.separationDistance;
-const cohDist = boids.cohesionDistance;
-const aliDist = boids.alignmentDistance;
-
-document.getElementsByName("sf").onChange = function(value) { setSepForce(value); };
-document.getElementsByName("cf").onChange = function(value) { setCohForce(value); };
-document.getElementsByName("af").onChange = function(value) { setAliForce(value); };
-document.getElementsByName("sd").onChange = function(value) { setSepDist(value); };
-document.getElementsByName("cd").onChange = function(value) { setCohDist(value); };
-document.getElementsByName("ad").onChange = function(value) { setAliDist(value); };
-
-function setSepForce(val) {
-  boids.separationForce = val;
-  console.log('changed')
-  render();
-}
-function setCohForce(val) {
-  boids.separationForce = val;
-  render();
-}
-function setAliForce(val) {
-  boids.separationForce = val;
-  render();
-}
-function setSepDist(val) {
-  boids.separationForce = val;
-  render();
-}
-function setCohDist(val) {
-  boids.separationForce = val;
-  render();
-}
-function setAliDist(val) {
-  boids.separationForce = val;
-  render();
-}
-
-
+const count = 280;
 //
 
 var scene = new THREE.Scene();
@@ -108,8 +54,6 @@ var position = new THREE.Vector3();
 var renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setSize(inWidth, inHeight);
-// container = document.createElement('div');
-// container.appendChild( renderer.domElement );
 document.body.appendChild(renderer.domElement);
 
 window.addEventListener( 'resize', onWindowResize, false );
@@ -125,83 +69,83 @@ const controls = new OrbitControls( camera, renderer.domElement );
 
 
 // const geometry = new THREE.ConeGeometry(1, 4, 5.3);
-const geometry = new THREE.SphereGeometry( 1, 8, 8 );
+const geometry = new THREE.SphereGeometry( 1, 6, 6 );
 const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
 let mesh = new THREE.InstancedMesh( geometry, material, count );
 mesh.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); //will be updated every frame
 const matrix = new THREE.Matrix4();
 const color = new THREE.Color();
 
-let i = 0;
-while (i < (count)){
-  matrix.setPosition( Math.floor(Math.random() * width),
-                      Math.floor(Math.random() * height),
-                      Math.floor(Math.random() * depth)
-                    );
-  boids.velocity.push( new THREE.Vector3( 0, 0, 0 ) );
-  boids.accel.push( new THREE.Vector3( 1, 1, 1 ) );
-  mesh.setMatrixAt( i, matrix );
-  // mesh.setColorAt( i, color.setHex( 0xffffff ) );
-  mesh.setColorAt( i, color.setHex( Math.random() * 0xffffff ) );
-  i++;
+function init() {
+  let i = 0;
+  while (i < (count)){
+    let x0 = Math.floor(Math.random() * (width*0.5) + 100);
+    let y0 = Math.floor(Math.random() * (height*0.5)+ 100);
+    let z0 = Math.floor(Math.random() * (depth*0.5)+ 100);
+    matrix.setPosition( x0, y0, z0 );
+    boids.velocity.push( new THREE.Vector3( 0, 0, 0 ) );
+    boids.accel.push( new THREE.Vector3( 0.1, 0.1, 0.1 ) );
+    mesh.setMatrixAt( i, matrix );
+      let pInt = getPitchInteger( convertToLatticeInd( x0, y0, z0 ) );
+    mesh.setColorAt( i, getColor( pInt ) );
+    // mesh.setColorAt( i, color.setHex( Math.random() * 0xffffff ) );
+    i++;
+  }
+  scene.add( mesh );
+
+  while ( i < (count)) {
+    setInitialMovVal( i );
+  }
 }
-scene.add( mesh );
 
-while ( i < (count)) {
-  setInitialMovVal( i );
+function getColor( int ) {
+  switch(int) {
+    case 0:
+      return (new THREE.Color( 0xef1011 ));
+      break;
+    case 1:
+      return (new THREE.Color( 0xe67b19 ));
+      break;
+    case 2:
+      return (new THREE.Color( 0xe4d41b ));
+      break;
+    case 3:
+      return (new THREE.Color( 0x7ce718 ));
+      break;
+    case 4:
+      return (new THREE.Color( 0x1de21d ));
+      break;
+    case 5:
+      return( new THREE.Color( 0x1ee192 ));
+      break;
+    case 6:
+      return (new THREE.Color( 0x10efee ));
+      break;
+    case 7:
+      return (new THREE.Color( 0x1984e6 ));
+      break;
+    case 8:
+      return (new THREE.Color( 0x1b2be4 ));
+      break;
+    case 9:
+      return (new THREE.Color( 0x8318e7 ));
+      break;
+    case 10:
+      return (new THREE.Color( 0xe21d32 ));
+      break;
+    case 11:
+      return (new THREE.Color( 0xe11e6d ));
+      break;
+    case 12:
+      return (new THREE.Color( 0xef1011 ));
+      break;
+    default:
+      return (new THREE.Color( 0xffffff ));
+  }
 }
 
-
-
-/* GUI & Stats */
-function buildGui() {
-  const gui = new GUI();
-  const params = {
-    //count is not included here
-    sepDist  : boids.separationDistance,
-    cohDist  : boids.cohesionDistance,
-    aliDist  : boids.alignmentDistance,
-    sepForce : boids.separationForce,
-    cohForce : boids.cohesionForce,
-    aliForce : boids.alignmentForce
-  };
-
-  // gui.add( mesh, 'count', 0, count);
-
-  gui.add( params, 'sepDist', 0, slen ).onChange( function ( val ) {
-    boids.separationDistance = val;
-    render();
-  });
-
-  gui.add( params, 'cohDist', 0, slen ).onChange( function ( val ) {
-    boids.cohesionDistance = val;
-    render();
-  });
-
-  gui.add( params, 'aliDist', 0, slen ).onChange( function ( val ) {
-    boids.alignmentDistance = val;
-    render();
-  });
-
-  gui.add( params, 'sepForce', 0, 100 ).onChange( function ( val ) {
-    boids.separationForce = val;
-    render();
-  });
-
-  gui.add( params, 'cohForce', 0, 100 ).onChange( function ( val ) {
-    boids.cohesionForce = val;
-    render();
-  });
-
-  gui.add( params, 'aliForce', 0, 100 ).onChange( function ( val ) {
-    boids.alignmentForce = val;
-    render();
-  });
-}
-// buildGui();
-
-// let stats = new Stats();
-// document.body.appendChild( stats.dom );
+let stats = new Stats();
+document.body.appendChild( stats.dom );
 
 //
 
@@ -261,12 +205,34 @@ function move() {
       }
     }
 
-    separation( sepForce, sforceX, sforceY, sforceZ, i );
-    cohesion(   cohForce, cforceX, cforceY, cforceZ, i );
-    alignment(  aliForce, aforceX, aforceY, aforceZ, i );
-    // console.log(addition);
+    let addition = new THREE.Vector3();
+    addition.add( separation( sepForce, sforceX, sforceY, sforceZ, i ) );
+    addition.sub( cohesion(   cohForce, cforceX, cforceY, cforceZ, i ) );
+    addition.sub( alignment(  aliForce, aforceX, aforceY, aforceZ, i ) );
+    if (thereIsAGoal) {
+      let oldMag = addition.length();
+      addition.normalize();
+      addition.multiplyScalar( 0.4 );
 
+      let pitchGoalIndFound = setPitchGoal( pitchGoalval );
+      let pitchGoalxyz = convertToXYZ( pitchGoalIndFound ) //THREE.Vector3;
+      pitchGoalxyz.normalize();
+      pitchGoalxyz.multiplyScalar( 0.6 );
+
+      addition.add(pitchGoalxyz);
+      addition.normalize();
+      addition.multiplyScalar( oldMag );
+
+      if (convertToLatticeInd(getAvgBoidPos()) == pitchGoalIndFound){
+        thereIsAGoal = false;
+      }
+    }
+
+    boids.accel[i].add( addition );
+
+    // console.log( addition );
   }
+
 
   for (let i = 0; i < count; i++ ) {
     let currAccel = boids.accel[i];
@@ -299,7 +265,10 @@ function move() {
     position.add( boids.velocity[i] );
     matrix.setPosition( position );
     mesh.setMatrixAt( i, matrix );
+    let pInt = getPitchInteger( convertToLatticeInd( position.x, position.y, position.z ) );
+    mesh.setColorAt( i, getColor( pInt ) );
     mesh.instanceMatrix.needsUpdate = true;
+    mesh.instanceColor.needsUpdate = true;
 
      //this is only here bc the bounds don't work well.
     teleport( i );
@@ -343,12 +312,12 @@ function separation( sepForce, sfX, sfY, sfZ, ind) {
   let length = hypot3( sfX, sfY, sfZ );
   let addv = new THREE.Vector3( 0, 0, 0 );
   if (length != 0){
-    addv.x = (sepForce * sfX / Math.pow(length,2));
-    addv.y = (sepForce * sfY / Math.pow(length,2));
-    addv.z = (sepForce * sfZ / Math.pow(length,2));
+    addv.x = (sepForce * sfX / length);
+    addv.y = (sepForce * sfY / length);
+    addv.z = (sepForce * sfZ / length);
   }
-  boids.accel[ind].add( addv );
-
+  // boids.accel[ind].add( addv );
+  return addv;
 }
 
 function cohesion( cohForce, cfX, cfY, cfZ , ind) {
@@ -359,18 +328,20 @@ function cohesion( cohForce, cfX, cfY, cfZ , ind) {
   addv.y = (cohForce * cfY / Math.pow(length,2));
   addv.z = (cohForce * cfZ / Math.pow(length,2));
   }
-  boids.accel[ind].sub( addv );
+  // boids.accel[ind].sub( addv );
+  return addv;
 }
 
 function alignment( aliForce, afX, afY, afZ , ind) {
   let length = hypot3( afX, afY, afZ );
   let addv = new THREE.Vector3( 0, 0, 0 );
   if (length != 0){
-  addv.x = (aliForce * afX / Math.pow(length,2));
-  addv.y = (aliForce * afY / Math.pow(length,2));
-  addv.z = (aliForce * afZ / Math.pow(length,2));
+  addv.x = (aliForce * afX / length);
+  addv.y = (aliForce * afY / length);
+  addv.z = (aliForce * afZ / length);
   }
-  boids.accel[ind].sub( addv );
+  // boids.accel[ind].sub( addv );
+  return addv;
 }
 
 // directly changes velocity and accel values.
@@ -419,38 +390,10 @@ function teleport( boidIndex ) {
   matrix.setPosition( b );
   mesh.setMatrixAt( boidIndex, matrix );
   mesh.instanceMatrix.needsUpdate = true;
+  mesh.instanceColor.needsUpdate = true;
 }
 
-// This is a helper function to envision the walls.
-function putInFrame() {
-
-  const fcount = 4;
-
-  // const geometry = new THREE.ConeGeometry(1, 4, 5.3);
-  const fgeo = new THREE.SphereBufferGeometry( 5, 32, 32 );
-  const fmat = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-  let fmesh = new THREE.InstancedMesh( fgeo, fmat, fcount );
-  const fmatrix = new THREE.Matrix4();
-
-  let i = 0;
-  fmatrix.setPosition( 0, 0, 0 );
-  fmesh.setMatrixAt( i, fmatrix );
-  fmesh.setColorAt( i, color.setHex( 0x000000 ) );
-  i++;
-  fmatrix.setPosition( slen, 0, 0 );
-  fmesh.setMatrixAt( i, fmatrix );
-  fmesh.setColorAt( i, color.setHex( 0x7F194A ) );
-  i++;
-  fmatrix.setPosition( 0, slen, 0 );
-  fmesh.setMatrixAt( i, fmatrix );
-  fmesh.setColorAt( i, color.setHex( 0xff0000 ) );
-  i++;
-  fmatrix.setPosition( 0, 0, slen );
-  fmesh.setMatrixAt( i, fmatrix );
-  fmesh.setColorAt( i, color.setHex( 0x008000 ) );
-  scene.add( fmesh );
-}
-// putInFrame();
+// let old = sepDist;
 
 function animate() {
   requestAnimationFrame(animate);
@@ -458,14 +401,20 @@ function animate() {
   if (finLoading) {
     vue_det.message = mostCommonPitch();
   }
+  // if (old != sepDist) {
+  //   console.log( 1 );
+  // }
+  stats.update();
   controls.update();
   render();
 }
+// move();
 
 function render() {
   renderer.render( scene, camera );
 }
-animate();
+
+// animate(); THIS IS CALLED ONCE DATA IS FINISHED LOADING
 
 //
 
@@ -490,11 +439,13 @@ function parseData( text ) {
 async function handleData( file ){
   latticePitchContents = await loadFile(file).then(parseData); //to fix later. Surely it's not efficient to have to load and wait everytime for the promise to finish.
   finLoading = true;
+  init();
+  animate();
 }
 handleData('./sept11pValuesByLine.txt')
 //
 
-/* Handles Boid Position to sound */
+/* Handles above data*/
 
 // cartesian coordinates to array index
 function convertToLatticeInd( xpos, ypos, zpos) {
@@ -505,9 +456,15 @@ function convertToLatticeInd( xpos, ypos, zpos) {
   return ind;
 }
 
+function convertToXYZ( latticeInd ) {
+  let xpos = Math.floor(latticeInd/1600);
+  let ypos = Math.floor((latticeInd % 1600)/40); //this is equivalent to ypos = Math.floor( (latticeInd-(1600*xpos))/40)
+  let zpos = Math.floor(latticeInd % 40);
+  return new THREE.Vector3( xpos, ypos, zpos );
+}
+
 function mostCommonPitch() {
   let tempArr = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-  // console.log(count);
   for (let i=0; i<count; i++) {
     let p = getBoidPos(i);
     let posInd = convertToLatticeInd( p.x, p.y, p.z );
@@ -559,7 +516,6 @@ function mostCommonPitch() {
       mostFrequent = i;
     }
   }
-  // console.log(tempArr);
   let msg = "O";
   switch( mostFrequent ) {
     case 0:
@@ -606,7 +562,6 @@ function mostCommonPitch() {
 
 function mostCommonPitchInteger() {
   let tempArr = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-  // console.log(count);
   for (let i=0; i<count; i++) {
     let p = getBoidPos(i);
     let posInd = convertToLatticeInd( p.x, p.y, p.z );
@@ -661,7 +616,155 @@ function mostCommonPitchInteger() {
   return mostFrequent;
 }
 
+function getPitchInteger( latticePitchIndex ) {
+  let val = latticePitchContents[latticePitchIndex];
+  switch(Math.round(val*12)) {
+    case 0:
+      return 0;
+      break;
+    case 1:
+      return 1;
+      break;
+    case 2:
+      return 2;
+      break;
+    case 3:
+      return 3;
+      break;
+    case 4:
+      return 4;
+      break;
+    case 5:
+      return 5;
+      break;
+    case 6:
+      return 6;
+      break;
+    case 7:
+      return 7;
+      break;
+    case 8:
+      return 8;
+      break;
+    case 9:
+      return 9;
+      break;
+    case 10:
+      return 10;
+      break;
+    case 11:
+      return 11;
+      break;
+    case 12:
+      return 0;
+  }
+}
 
+function setPitchGoal( val ) {
+  let mostFreqInt = mostCommonPitchInteger();
+  let pitchGoalInt = (mostFreqInt + val) % 12;
+
+  let avgP = getAvgBoidPos();
+  // I choose slightly less than the divisor here. It's the same if I increase by the divisor or a bit less,
+  // maybe this helps with avoiding the boundary conditions in the extreme conditions.
+
+  // start rad a distance away from adjacent blocks.
+  for (let rad = divisor*3.9; i<= latticeSidelen; i=i+(divisor*.9)) {
+    let lattIndArr = fibonacci_sphere( rad, 100, avgP.x, avgP.y, avgP.z );
+
+
+    let viablePositions = findPitches( lattIndArr, pitchGoalInt );
+    let result = largeEnoughDomain( viablePositions, pitchGoalInt );
+    if (result != 0 ){
+      thereIsAGoal = true;
+      return result;
+    }
+  }
+  console.log('1') // either no good results (positions to move towards), or some other problem.
+}
+
+function getAvgBoidPos() {
+  let avgBoidPos = new THREE.Vector3();
+  for (let i=0; i<count; i++) {
+    avgBoidPos.add( getBoidPos( i ) );
+  }
+  avgBoidPos.multiplyScalar( 1/count );
+  if (avgBoidPos.length == 0) {
+    console.log('2') //something went wrong with getAvgBoidPos()
+  }
+  return avgBoidPos;
+}
+
+// The sphere made below is a unit sphere, rad acts as a multiplier to grow the sphere
+function fibonacci_sphere( rad, samples, x0, y0, z0 ) {
+  let points = new Array( samples );
+  let phi = Math.PI * (3 - Math.pow( 5, 1/2 ) );
+
+  for (let i=0; i<samples; i++) {
+    let y = ((1 - (i / (samples - 1) ) * 2)*rad) + y0;
+    let radius = Math.pow(1 - (y*y),1/2 );
+
+    let theta = phi*i;
+
+    let x = ((Math.cos(theta) *radius)*rad) + x0;
+    let z = ((Math.sin(theta) *radius)*rad) + z0;
+
+    // B.C.
+    if (x < 0) {
+      x = 0;
+    } else if (x > slen) {
+      x = slen;
+    }
+    if (y < 0) {
+      y = 0;
+    } else if (x > slen) {
+      y = slen;
+    }
+    if (z < 0) {
+      z = 0;
+    } else if (x > slen) {
+      z = slen;
+    }
+    points[i] = convertToLatticeInd( x, y, z );
+  }
+  return points;
+}
+
+function findPitches( p_indArr, pitchGoal ) {
+  let gotcha = [];
+
+  for (let i=0; i<p_indArr.length; i++) {
+    if (((p_indArr[i] - (((pitchGoal*2)-1)/24)) > 0) && ((p_indArr[i] - (((pitchGoal*2)+1)/24)) < 0)) {
+      gotcha.push(p_indArr[i]);
+    }
+  }
+  return gotcha;
+}
+
+function largeEnoughDomain( gotcha, pitchGoalInt ) {
+  let i = 0;
+  while( i < gotcha.length) {
+    let center = gotcha[i];
+    let counter = 1;
+    while (counter < 3) { //looking for a pitch domain of at least 3 blocks in size.
+      //check +-z, then +-y, then +-x
+      if ( getPitchInteger(latticePitchContents[center+1]) == pitchGoalInt ) { counter++; }
+      if ( getPitchInteger(latticePitchContents[center-1]) == pitchGoalInt ) { counter++; }
+      if ( getPitchInteger(latticePitchContents[center+40]) == pitchGoalInt ) { counter++; }
+      if ( getPitchInteger(latticePitchContents[center-40]) == pitchGoalInt ) { counter++; }
+      if ( getPitchInteger(latticePitchContents[center+1600]) == pitchGoalInt ) { counter++; }
+      if ( getPitchInteger(latticePitchContents[center-1600]) == pitchGoalInt ) { counter++; }
+      if (counter < 3) { counter = 100; }
+    }
+
+    if ((counter >=3) || (counter < 100)) {
+      i = Number.MAX_SAFE_INTEGER; //exit out of while loop
+      return center;
+    }
+    i++;
+  }
+  return 0; //the gotcha array did not have a domain big enough.
+}
 
 /* WEBPD */
 
