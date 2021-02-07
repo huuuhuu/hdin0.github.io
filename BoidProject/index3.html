@@ -16,6 +16,32 @@
 <body>
   <script src="js/jquery.js"></script>
   <script src="js/webpd-latest.js"></script>
+  <script>
+    let latticeSidelen = 40;
+    let slen = 600;
+    let divisor = slen / latticeSidelen;
+
+    let boids = [];
+    boids.velocity = [];
+    boids.accel = [];
+    boids.separationDistance = divisor/5;
+    boids.cohesionDistance = slen*.4;
+    boids.alignmentDistance = slen*.5;
+    boids.separationForce = divisor*0.1;
+    boids.cohesionForce = divisor*0.4;
+    boids.alignmentForce = divisor*0.6;
+    boids.accelerationLimitRoot = 1.5;
+    boids.speedLimit = 3;
+    boids.accelerationLimit = Math.pow(boids.accelerationLimitRoot, 2);
+
+    let sepForce = boids.separationForce;
+    let cohForce = boids.cohesionForce;
+    let aliForce = boids.alignmentForce;
+    let sepDist = boids.separationDistance;
+    let cohDist = boids.cohesionDistance;
+    let aliDist = boids.alignmentDistance;
+
+  </script>
   <script type="module" src="./realisticBoids.js"></script>
 
   <!-- <div class="sound-buttons">
@@ -56,19 +82,17 @@
              message: 'NA'
           }
        });
+
 </script>
 
-
-  <!-- <script type="module" src="./controlBoidSide.js"></script> -->
+ <!-- CONTROL PANEL -->
 <div id="app">
-  <!-- <script src="js/vue-latest.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script> -->
   <script type="text/x-template" id="app-template">
   <v-app>
     <v-container>
 
       <v-row no-gutters>
-      <span>Controls:</span>
+      <h2>Controls:</h2>
       </v-row>
 
       <v-row no-gutters>
@@ -83,7 +107,7 @@
         hide-details
         thumb-label
         @change="onChange($event, 1)"
-        name="sd"
+        value = 3
       ></v-slider>
       </v-col>
       </v-row>
@@ -100,7 +124,7 @@
         hide-details
         thumb-label
         @change="onChange($event, 2)"
-        name="cd"
+        value = 240
       ></v-slider>
       </v-col>
       </v-row>
@@ -117,7 +141,7 @@
         hide-details
         thumb-label
         @change="onChange($event, 3)"
-        name="ad"
+        value = 300
       ></v-slider>
       </v-col>
       </v-row>
@@ -135,7 +159,7 @@
         hide-details
         thumb-label
         @change="onChange($event, 4)"
-        name="sf"
+        value = 5.25
       ></v-slider>
       </v-col>
       </v-row>
@@ -152,7 +176,7 @@
         hide-details
         thumb-label
         @change="onChange($event, 5)"
-        name="cf"
+        value = 4.5
       ></v-slider>
       </v-col>
       </v-row>
@@ -169,7 +193,7 @@
         hide-details
         thumb-label
         @change="onChange($event, 6)"
-        name="af"
+        value = 12
       ></v-slider>
       </v-col>
       </v-row>
@@ -209,6 +233,8 @@
   </v-app>
   </script>
 </div>
+
+
 <script>
 const App = {
   template: '#app-template',
@@ -243,5 +269,63 @@ new Vue({
 }).$mount('#app')
 </script>
 
+<!-- MORE INFORMATION OVERLAY -->
+<div id="over">
+ <v-app id="inspire">
+   <div class="text-center">
+     <v-btn
+       absolute left bottom
+       small
+       text
+       color="primary"
+       @click="overlay = !overlay"
+     >
+       More Information
+     </v-btn>
+
+     <v-overlay :value="overlay">
+       <v-card
+      class="mx-auto"
+      width="80vw"
+      elevation="8"
+    >
+      <v-card-title
+        class="font-weight-thin">
+        BOID MUSIC
+      </v-card-title>
+
+      <v-card-text
+        class="text-left font-weight-thin"
+        id="over-content"
+      >
+        Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc,
+      </v-card-text>
+
+      <v-card-actions>
+        <v-btn
+         text
+         color="primary"
+         @click="overlay = false"
+       >
+         Close
+       </v-btn>
+      </v-card-actions>
+    </v-card>
+     </v-overlay>
+   </div>
+ </v-app>
+</div>
+
+<script>
+var over = new Vue({
+ el: '#over',
+ vuetify: new Vuetify(),
+ data: () => ({
+   absolute: true,
+   overlay: false,
+ }),
+})
+</script>
 </body>
 </html>
+
