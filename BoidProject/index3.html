@@ -20,6 +20,7 @@
     let latticeSidelen = 40;
     let slen = 600;
     let divisor = slen / latticeSidelen;
+        let flockRad = 100;
 
     let boids = [];
     boids.velocity = [];
@@ -29,7 +30,8 @@
     boids.alignmentDistance = slen*.5;
     boids.separationForce = divisor*0.1;
     boids.cohesionForce = divisor*0.4;
-    boids.alignmentForce = divisor*0.6;
+    // boids.alignmentForce = divisor*0.6;
+    boids.alignmentForce = divisor;
     boids.accelerationLimitRoot = 1.5;
     boids.speedLimit = 3;
     boids.accelerationLimit = Math.pow(boids.accelerationLimitRoot, 2);
