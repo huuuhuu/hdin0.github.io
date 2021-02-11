@@ -236,14 +236,14 @@ function move( centerOfMass ) {
 
      //this is only here bc the bounds don't work well.
     teleport( i );
-    // if ( finLoading && ( i < count )) {
-    //   // mesh.getMatrixAt( i, matrix );
-    //   // position.setFromMatrixPosition( matrix );
-    //   // let posIndex = convertToLatticeInd( position.x , position.y , position.z );
-    //   // if (posIndex < 0 || posIndex > 63999 ) continue
-    //   // triggerReceive( i+1, posIndex )
-    //   // positionCounter( i );
-    // }
+    if ( finLoading && ( i < 31 )) {
+      mesh.getMatrixAt( i, matrix );
+      position.setFromMatrixPosition( matrix );
+      let posIndex = convertToLatticeInd( position.x , position.y , position.z );
+      if (posIndex < 0 || posIndex > 63999 ) continue
+      triggerReceive( i+1, posIndex )
+      positionCounter( i );
+    }
   }
 }
 
@@ -797,9 +797,10 @@ function largeEnoughDomain( gotcha, pitchGoalInt ) {
 
 // sends to pureData
 function triggerReceive( boidIndex, posIndex ) {
-  var val = Math.round( latticePitchContents[posIndex] );
+  var val = latticePitchContents[posIndex];
+  val = Math.pow(2,val) * 220;
   let receiver = 'num' + boidIndex.toString();
-
+  // console.log(val);
   Pd.send( receiver , [parseFloat(val)] );
 }
 
