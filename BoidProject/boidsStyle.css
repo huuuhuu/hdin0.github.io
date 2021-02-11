@@ -10,6 +10,10 @@ body {
   background-color: var(main-bg-color);
 }
 
+.sound-buttons {
+  position: absolute;
+  top: 10vw;
+}
 /* .on {
   width: 20vw;
   height: 10vh;
