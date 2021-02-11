@@ -173,12 +173,186 @@
       <v-col cols="12" md="8">
       <v-slider
         max="15"
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" name="Huay">
+  <title>Boid Project</title>
+  <!-- <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet"> -->
+
+  <link rel="stylesheet" href="./vueStyle.css" >
+  <link rel="stylesheet" href="./boidsStyle.css">
+  <script src="js/vue-latest.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+</head>
+
+<body>
+  <script src="js/jquery.js"></script>
+  <script src="js/webpd-latest.js"></script>
+  <script>
+    let latticeSidelen = 40;
+    let slen = 600;
+    let divisor = slen / latticeSidelen;
+    let flockRad = 100;
+
+
+    let boids = [];
+    boids.velocity = [];
+    boids.accel = [];
+    boids.separationDistance = divisor/3;
+    boids.cohesionDistance = slen*.4;
+    boids.alignmentDistance = slen*.5;
+    boids.separationForce = 1.5;
+    boids.cohesionForce = 3;
+    // boids.alignmentForce = divisor*0.6;
+    boids.alignmentForce = 15;
+    boids.accelerationLimitRoot = 1.5;
+    boids.speedLimit = 3;
+    boids.accelerationLimit = Math.pow(boids.accelerationLimitRoot, 2);
+
+    let sepForce = boids.separationForce;
+    let cohForce = boids.cohesionForce;
+    let aliForce = boids.alignmentForce;
+    let sepDist = boids.separationDistance;
+    let cohDist = boids.cohesionDistance;
+    let aliDist = boids.alignmentDistance;
+
+  </script>
+  <script type="module" src="./realisticBoids.js"></script>
+
+  <div class="sound-buttons">
+      <button id="startOn" onclick="openPatch()">Start Patch</button>
+      <button onclick="stopPatch()">Stop</button>
+      <script>
+      function openPatch() {
+          var patch
+          $.get('patches/addSynsmall.pd', function(patchStr) {
+            patch = Pd.loadPatch(patchStr)
+
+            // let msgArr = []; //sends pitch
+            // let vpdArr = []; //sends volume
+            // let oscArr = []; //osc~ objects
+            // let plusArr = [];  //+~ objects
+            //
+            // let dacOb = patch.createObject( 'dac~' );
+            // plusArr.push( patch.createObject( '+~' ) );
+            // plusArr[0].o(0).connect( dacOb.i(0) );
+            Pd.start();
+          })
+        }
+      function stopPatch() {
+        Pd.stop();
+      }
+      </script>
+  </div>
+
+<div id = "modePitch">
+       <h1>{{ message }}</h1>
+    </div>
+    <script type = "text/javascript">
+       var vue_det = new Vue({
+          el: '#modePitch',
+          data: {
+             message: 'NA'
+          }
+       });
+
+</script>
+
+ <!-- CONTROL PANEL -->
+<div id="app">
+  <script type="text/x-template" id="app-template">
+  <v-app>
+    <v-container>
+
+      <v-row no-gutters>
+      <h2>Controls:</h2>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Separation Distance</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="600"
         min="0"
         class="ma-0 pa-0"
         hide-details
         thumb-label
+        @change="onChange($event, 1)"
+        value = 3
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Cohesion Distance</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="600"
+        min="0"
+        class="ma-0 pa-0"
+        hide-details
+        thumb-label
+        @change="onChange($event, 2)"
+        value = 240
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Alignment Distance</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="600"
+        min="0"
+        class="ma-0 pa-0"
+        hide-details
+        thumb-label
+        @change="onChange($event, 3)"
+        value = 300
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <!-- Got 15 from slen/40 -->
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Separation Force</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="15"
+        min="1"
+        class="ma-0 pa-0"
+        hide-details
+        thumb-label
+        @change="onChange($event, 4)"
+        value = 1.5
+      ></v-slider>
+      </v-col>
+      </v-row>
+
+      <v-row no-gutters>
+      <v-col cols="12" sm="6" md="4">
+      <span>Cohesion<br>Force</span>
+      </v-col>
+      <v-col cols="12" md="8">
+      <v-slider
+        max="15"
+        min="1"
+        class="ma-0 pa-0"
+        hide-details
+        thumb-label
         @change="onChange($event, 5)"
-        value = 4.5
+        value = 6
       ></v-slider>
       </v-col>
       </v-row>
@@ -189,13 +363,13 @@
       </v-col>
       <v-col cols="12" md="8">
       <v-slider
-        max="15"
-        min="0"
+        max="30"
+        min="1"
         class="ma-0 pa-0"
         hide-details
         thumb-label
         @change="onChange($event, 6)"
-        value = 12
+        value = 15
       ></v-slider>
       </v-col>
       </v-row>
