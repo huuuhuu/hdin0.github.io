@@ -40,7 +40,7 @@ var ymaxN = new THREE.Vector3( 0, -1, 0 ); var yminN = new THREE.Vector3( 0, 1, 
 var zmaxN = new THREE.Vector3( 0, 0, -1 ); var zminN = new THREE.Vector3( 0, 0, 1);
 
 /* GUI Parameters */
-const count = 200;
+const count = 400;
 // const count = 10;
 //
 
