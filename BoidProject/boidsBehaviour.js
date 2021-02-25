@@ -40,7 +40,7 @@ var ymaxN = new THREE.Vector3( 0, -1, 0 ); var yminN = new THREE.Vector3( 0, 1, 
 var zmaxN = new THREE.Vector3( 0, 0, -1 ); var zminN = new THREE.Vector3( 0, 0, 1);
 
 /* GUI Parameters */
-const count = 270;
+const count = 280;
 // const count = 10;
 //
 
@@ -105,8 +105,8 @@ function init() {
   }
 }
 
-let stats = new Stats();
-document.body.appendChild( stats.dom );
+// let stats = new Stats();
+// document.body.appendChild( stats.dom );
 
 //
 
@@ -226,10 +226,10 @@ function move() {
       position.getComponent(2) % slen);
     matrix.setPosition( position );
     mesh.setMatrixAt( i, matrix );
-    // let pInt = getPitchInteger( convertToLatticeInd( position.x, position.y, position.z ) );
-    // mesh.setColorAt( i, getColor( pInt ) );
+    let pInt = getPitchInteger( convertToLatticeInd( position.x, position.y, position.z ) );
+    mesh.setColorAt( i, getColor( pInt ) );
     mesh.instanceMatrix.needsUpdate = true;
-    // mesh.instanceColor.needsUpdate = true;
+    mesh.instanceColor.needsUpdate = true;
 
 
      //this is only here bc the bounds don't work well.
@@ -371,7 +371,7 @@ function animate() {
   if (finLoading) {
     vue_det.message = mostCommonPitch();
   }
-  stats.update();
+//   stats.update();
   controls.update();
 
   // if ((tii % 100) == 1) {
