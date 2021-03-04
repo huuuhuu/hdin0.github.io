@@ -9,8 +9,10 @@ let inWidth = window.innerWidth * altWidt;
 let inHeight = window.innerHeight * altHeig;
 
 let latticePitchContents = [];
+let latticePitchIntegerContents = new Array( 64000 );
 let finLoading = false;
 let clicked = false;
+let searching = false;
 
 let thereIsAGoal = false;
 let pitchGoalval = -1;
@@ -40,7 +42,7 @@ var ymaxN = new THREE.Vector3( 0, -1, 0 ); var yminN = new THREE.Vector3( 0, 1, 
 var zmaxN = new THREE.Vector3( 0, 0, -1 ); var zminN = new THREE.Vector3( 0, 0, 1);
 
 /* GUI Parameters */
-const count = 280;
+const count = 270;
 // const count = 10;
 //
 
@@ -82,9 +84,9 @@ const color = new THREE.Color();
 function init() {
   let i = 0;
   while (i < (count)){
-    let x0 = Math.floor(Math.random() * (eyeDist) + (slen*0.2));
-    let y0 = Math.floor(Math.random() * (eyeDist) + (slen*0.2));
-    let z0 = Math.floor(Math.random() * (eyeDist) + (slen*0.2));
+    let x0 = Math.floor(Math.random() * (eyeDist) + (slen*0.3));
+    let y0 = Math.floor(Math.random() * (eyeDist) + (slen*0.3));
+    let z0 = Math.floor(Math.random() * (eyeDist) + (slen*0.3));
     // let x0 = Math.floor(Math.random() * (width));
     // let y0 = Math.floor(Math.random() * (height));
     // let z0 = Math.floor(Math.random() * (depth));
@@ -105,8 +107,8 @@ function init() {
   }
 }
 
-// let stats = new Stats();
-// document.body.appendChild( stats.dom );
+let stats = new Stats();
+document.body.appendChild( stats.dom );
 
 //
 
@@ -137,6 +139,148 @@ function calcChange() {
 
   let max_angle = 0;
   // why have three distance parameters.
+  let diff = new THREE.Vector3();
+  let dist = 0;
+  let thetaLim = 0.7*Math.PI;
+  for (let i = 0; i < count; i++ ) {
+    sforceX = 0; sforceY = 0; sforceZ = 0;
+    cforceX = 0; cforceY = 0; cforceZ = 0;
+    aforceX = 0; aforceY = 0; aforceZ = 0;
+
+    let currBoidPos = getBoidPos( i );
+    let cPos = new THREE.Vector3( currBoidPos.x, currBoidPos.y, currBoidPos.z);
+
+    for (let tar = 0; tar < count; tar++ ) {
+      if (i == tar) continue
+      let targetPos = getBoidPos( tar );
+      let tPos = new THREE.Vector3( targetPos.x, targetPos.y, targetPos.z );
+      diff = vectorToPeriodic( cPos, tPos, slen );
+      // console.log('----')
+      // console.log(cPos);
+      // console.log(tPos);
+      // console.log(dist);
+      dist = distanceToPeriodic( cPos, targetPos, slen );
+
+      let theta = boids.velocity[i].angleTo( diff.multiplyScalar(-1) ); // vector algebra, had to get the difference vector in the opposite dir.
+
+      if ((dist < eyeDist) && (theta < thetaLim)){
+
+        cforceX += diff.x*dist;
+        cforceY += diff.y*dist;
+        cforceZ += diff.z*dist;
+
+        aforceX += boids.velocity[tar].x * (1/Math.pow(dist,2));
+        aforceY += boids.velocity[tar].y * (1/Math.pow(dist,2));
+        aforceZ += boids.velocity[tar].z * (1/Math.pow(dist,2));
+
+        if (dist < sepDist) {
+        sforceX += diff.x * (1/Math.pow(dist,2));
+        sforceY += diff.y * (1/Math.pow(dist,2));
+        sforceZ += diff.z * (1/Math.pow(dist,2));
+        }
+      }
+
+    }
+
+    let addition = new THREE.Vector3();
+    addition.add( separation( sepForce, sforceX, sforceY, sforceZ) );
+    cohForce = 0.00001;
+    addition.sub( cohesion(   cohForce, cforceX, cforceY, cforceZ) );
+    addition.add( alignment(  aliForce, aforceX, aforceY, aforceZ) );
+    boids.accel[i].add( addition );
+
+    // avoidObstacles( i );
+  }
+}
+
+function move() {
+
+  calcChange();
+
+  for (let i = 0; i < count; i++ ) {
+    let currAccel = boids.accel[i];
+    if ( boids.accelerationLimit ) {
+      let c_accel = hypot3( currAccel.x, currAccel.y, currAccel.z );
+      if ( c_accel > boids.accelerationLimit ) {
+        let ratio = boids.accelerationLimit / c_accel;
+        boids.accel[i].multiplyScalar( ratio );
+      }
+    }
+
+    boids.velocity[i].add( boids.accel[i] );
+    let currVel = boids.velocity[i];
+    if ( boids.speedLimit ) {
+      let c_vel = hypot3( currVel.x, currVel.y, currVel.z );
+      if ( c_vel > boids.speedLimit ) {
+        let ratio = boids.speedLimit / c_vel;
+        boids.velocity[i].multiplyScalar( ratio );
+      }
+    }
+  }
+
+  for (let i = 0; i < count; i++ ) {
+
+    mesh.getMatrixAt( i, matrix );
+    position.setFromMatrixPosition( matrix );
+    position.add( boids.velocity[i] );
+    position.set(
+      position.getComponent(0) % slen,
+      position.getComponent(1) % slen,
+      position.getComponent(2) % slen);
+    matrix.setPosition( position );
+    mesh.setMatrixAt( i, matrix );
+    let pInt = getPitchInteger( convertToLatticeInd( position.x, position.y, position.z ) );
+    mesh.setColorAt( i, getColor( pInt ) );
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.instanceColor.needsUpdate = true;
+
+
+     //this is only here bc the bounds don't work well.
+    // teleport( i );
+    if ( finLoading && ( i < 21 )) {
+      mesh.getMatrixAt( i, matrix );
+      position.setFromMatrixPosition( matrix );
+      let posIndex = convertToLatticeInd( position.x , position.y , position.z );
+      if (posIndex < 0 || posIndex > 63999 ) continue
+      triggerReceive( i+1, posIndex )
+      positionCounter( i );
+    }
+  }
+}
+
+/*a,b are vectors, and mod_length is the width of period */
+/* returns a positive scalar*/
+function distanceToPeriodic( a, b, mod_length ) {
+
+  // Find true difference:
+  let xdiff = Math.min( Math.abs(b.x-a.x), mod_length-b.x+a.x, mod_length-a.x+b.x );
+  let ydiff = Math.min( Math.abs(b.y-a.y), mod_length-b.y+a.y, mod_length-a.y+b.y );
+  let zdiff = Math.min( Math.abs(b.z-a.z), mod_length-b.z+a.z, mod_length-a.z+b.z );
+
+  return hypot3(xdiff,ydiff,zdiff);
+}
+
+
+
+// Produces the direction vector (a TO b) with the correct periodic length
+// The Three.js normalize method preservers sign
+function vectorToPeriodic( a, b, mod_length) {
+
+  let d = distanceToPeriodic( a, b, mod_length );
+  b.sub(a);
+  b.normalize();
+  let dirVec = b;
+  dirVec.multiplyScalar(d);
+  return b;
+
+}
+
+
+function move_withA_goal( pitch_val) {
+
+  let max_angle = 0;
+  // why have three distance parameters.
+  let diff = new THREE.Vector3();
   for (let i = 0; i < count; i++ ) {
     sforceX = 0; sforceY = 0; sforceZ = 0;
     cforceX = 0; cforceY = 0; cforceZ = 0;
@@ -146,12 +290,13 @@ function calcChange() {
     let currBoidPos = getBoidPos( i );
     let cPos = new THREE.Vector3( currBoidPos.x, currBoidPos.y, currBoidPos.z);
 
+
     for (let tar = 0; tar < count; tar++ ) {
       if (i == tar) continue
       let targetPos = getBoidPos( tar );
       // let diff = new THREE.Vector3( cPos.x-targetPos.x, cPos.y-targetPos.y, cPos.z-targetPos.z );
-      let diff = new THREE.Vector3( cPos.x-targetPos.x, cPos.y-targetPos.y, cPos.z-targetPos.z );
-      let dist = hypot3( diff.x, diff.y, diff.z );
+      diff = vectorToPeriodic( cPos, targetPos, slen);
+      let dist = distanceToPeriodic( cPos, targetPos, slen);
 
       let theta = boids.velocity[i].angleTo( diff.multiplyScalar(-1) ); // vector algebra, had to get the difference vector in the opposite dir.
       let thetaLim = 0.8*Math.PI;
@@ -169,30 +314,23 @@ function calcChange() {
         aforceY += boids.velocity[tar].y * (1/Math.pow(dist,2));
         aforceZ += boids.velocity[tar].z * (1/Math.pow(dist,2));
 
-        if (dist < sepDist) {
+        // if (dist < sepDist) {
           sforceX += diff.x * (1/Math.pow(dist,2));
           sforceY += diff.y * (1/Math.pow(dist,2));
           sforceZ += diff.z * (1/Math.pow(dist,2));
-        }
+        // }
       }
 
     }
 
     let addition = new THREE.Vector3();
     addition.sub( separation( sepForce, sforceX, sforceY, sforceZ) );
-    addition.sub( cohesion(   cohForce, cforceX, cforceY, cforceZ) );
-    addition.add( alignment(  aliForce, aforceX, aforceY, aforceZ) );
+    // addition.sub( cohesion(   cohForce, cforceX, cforceY, cforceZ) );
+    // addition.add( alignment(  aliForce, aforceX, aforceY, aforceZ) );
     boids.accel[i].add( addition );
 
     // avoidObstacles( i );
   }
-}
-
-
-
-function move() {
-
-  calcChange();
 
   for (let i = 0; i < count; i++ ) {
     let currAccel = boids.accel[i];
@@ -243,6 +381,8 @@ function move() {
       positionCounter( i );
     }
   }
+
+
 }
 
 // add this when movement is right
@@ -361,23 +501,46 @@ function walls( component, value) {
   return accept;
 }
 
+// Takes in an interval(ex. fifth(7), M-third(4)) value, returns a location
+function rand_findPitch( interval ){
+  let mostFreqInt = mostCommonPitchInteger();
+  let pitchGoalInt = (mostFreqInt + interval) % 12;
+
+  let found = false;
+  let r = 0;
+  let tickss = 0;
+  while (found == false){
+    r = Math.round(Math.random()*64000);
+    if (latticePitchIntegerContents[r] == pitchGoalInt){
+      found = true;
+    }
+    tickss++;
+    if (tickss == 64000){
+      found = true;
+      console.log('wrong');
+    }
+  }
+  return (convertToXYZ(r));
+  // return latticePitchIntegerContents;
+}
+
 
 // let old = sepDist;
 
 let tii = 0;
 function animate() {
   requestAnimationFrame(animate);
-  move();
+  if (searching == false) {
+    move();
+  } else {
+    move_withA_goal();
+  }
   if (finLoading) {
     vue_det.message = mostCommonPitch();
   }
-//   stats.update();
+  stats.update();
   controls.update();
 
-  // if ((tii % 100) == 1) {
-  //   // console.log(sepDist)
-  // }
-  // tii++;
 
   render();
 
@@ -413,11 +576,17 @@ function parseData( text ) {
 
 async function handleData( file ){
   latticePitchContents = await loadFile(file).then(parseData); //to fix later. Surely it's not efficient to have to load and wait everytime for the promise to finish.
+  for(let i = 0; i< latticePitchContents.length; i++){
+    latticePitchIntegerContents[i] = getPitchInteger(latticePitchContents[i]);
+  }
   finLoading = true;
   init();
   animate();
 }
 handleData('./sept11pValuesByLine.txt')
+// init();
+// move();
+// console.log( rand_findPitch( 7 ) );
 //
 
 /* Handles above data*/
@@ -752,7 +921,6 @@ function fibonacci_sphere_toPitches( rad, samples, x0, y0, z0 ) {
 }
 
 function fibonacci_sphere( rad, samples, x0, y0, z0 ) {
-  // console.log(z0);
   let points = [];
   points.x = new Array( samples );
   points.y = new Array( samples );
