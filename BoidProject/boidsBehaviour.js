@@ -184,7 +184,6 @@ function calcChange() {
 
     let addition = new THREE.Vector3();
     addition.add( separation( sepForce, sforceX, sforceY, sforceZ) );
-    cohForce = 0.00001;
     addition.sub( cohesion(   cohForce, cforceX, cforceY, cforceZ) );
     addition.add( alignment(  aliForce, aforceX, aforceY, aforceZ) );
     boids.accel[i].add( addition );
