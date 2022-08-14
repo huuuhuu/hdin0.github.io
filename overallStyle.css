@@ -1,0 +1,173 @@
+:root {
+  --main-bg-color: #ffffff;
+  --text-color   : #3B302C;
+  --button-color : #844344;
+  --button-hover : #a87b7c;
+  --accent1      : #D1C698;
+  --accent2      : #868B6E;
+
+  --nav-width: 22vw;
+  --nav-height: 10vh;
+  --nav-height-open: 40vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+[class*="col-"] {
+  float: left;
+  padding: 15px;
+}
+.col-1 {width: 8.33%;}
+.col-2 {width: 16.66%;}
+.col-3 {width: 25%;}
+.col-4 {width: 33.33%;}
+.col-5 {width: 41.66%;}
+.col-6 {width: 50%;}
+.col-7 {width: 58.33%;}
+.col-8 {width: 66.66%;}
+.col-9 {width: 75%;}
+.col-10 {width: 83.33%;}
+.col-11 {width: 91.66%;}
+.col-12 {width: 100%;}
+
+@keyframes item-fade-in {
+  0% {opacity: 0; }
+  100% {flex: 1; opacity: 1; }
+}
+
+body {
+  background-color: var(--main-bg-color);
+  color: var(--text-color)
+  margin: 0px;
+  padidng: 0px;
+}
+
+nav {
+  width: var(--nav-width);
+  height: var(--nav-height);
+  margin-top: 15%;
+  background-color: var(--button-color);
+  display: flex;
+  flex-flow: column nowrap;
+  transition: 120ms height linear, 120ms widthlinear, 120ms background-color linear;
+}
+
+nav > header {
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  transition: 180ms font-size linear;
+  cursor: default;
+}
+
+nav:hover {
+  background-color: var(--button-hover);
+  transition: 120ms background-color linear;
+}
+
+nav:nth-child(1):hover, nav:nth-child(2):hover {
+    height: var(--nav-height-open);
+    transition: 120ms background-color linear, 240ms height linear;
+}
+
+nav:hover > header {
+    transition: 180ms font-size linear;
+}
+
+nav > div {
+    height: 0;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    transition: 240ms background-color linear;
+    font-size: 1.2em;
+    cursor: default;
+}
+
+nav:hover > div {
+    animation: 240ms item-fade-in linear forwards;
+    animation-delay: 120ms;
+    transition: 120ms background-color linear;
+}
+
+.top-links {
+  display: flex;
+  text-align: center;
+}
+
+.link-button {
+  color: purple;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin: 4px 2px;
+  transition-duration: 1s;
+  cursor: pointer;
+  background-color: var(--button-color);
+  text-decoration-color: var(--accent1);
+  border: var(--button-color);
+  width: 24vw;
+  font-family: serif;
+  font-size: 15px;
+}
+
+.link-button:hover {
+  background-color: var(--button-hover);
+  color: var(--button-color);
+}
+
+.link-button a:link {
+  color: white;
+  text-decoration: none;
+}
+.link-button a:visited {
+  color: white;
+  text-decoration: none;
+}
+
+.header {
+  text-align: center;
+  /* line-height: 10px; */
+}
+
+#hcaption {
+  font-weight: bold;
+  font-size: 13px;
+  line-height: 1px;
+}
+
+.daily-thing {
+  padding-top: 10px;
+  max-width: 60vw;
+}
+
+.daily-thing img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.daily-thing p {
+  background-color: var(--accent2);
+  font-family: "Times New Roman", Times, serif;
+  padding-left: 3px;
+}
+
+.last-up {
+  padding-right: 15px;
+  text-align: right;
+  font-size: 14px;
+}
+
+/* .desk-img {
+  max-width = 30vw;
+} */
